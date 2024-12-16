@@ -10,6 +10,7 @@ import { WalletModule } from './wallet/wallet.module';
 import { HelloModule } from './hello/hello.module';
 import { BullModule } from '@nestjs/bull';
 import { TelegrafModule } from 'nestjs-telegraf';
+import { TronwebModule } from './tronweb/tronweb.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TelegrafModule } from 'nestjs-telegraf';
       }),
       inject: [ConfigService],
     }),
+    TronwebModule,
   ],
   controllers: [AppController],
   providers: [ConfigService, AppService, OrderService, PrismaService],

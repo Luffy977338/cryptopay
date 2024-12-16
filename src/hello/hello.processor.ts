@@ -1,27 +1,29 @@
-// src/tasks/tasks.processor.ts
-import { Processor, Process } from '@nestjs/bull';
-import { Cron } from '@nestjs/schedule';
-import { Job } from 'bull';
-import { Context } from 'telegraf';
+import { Processor, Process, InjectQueue } from '@nestjs/bull';
+import { Job, Queue } from 'bull';
+import { InjectBot } from 'nestjs-telegraf';
+import { Telegraf } from 'telegraf';
 
-@Processor('hello')
+@Processor('messageQueue')
 export class HelloProcessor {
-  @Process()
-  async handleHello(job: Job) {
-    try {
-      const {
-        duration,
-        chatId,
-        ctx,
-      }: { duration: number; chatId: number; ctx: Context } = job.data;
-      console.log('Processing job:', job.id); // Log job ID
-      // Use chatId to send a message
-      await ctx.telegram.sendMessage(chatId, 'Hello!');
-      job.progress(100); // Indicate job completion
-      return {};
-    } catch (error) {
-      console.error('Error processing job:', error); // Log any errors
-      throw error; // Re-throw error to handle it elsewhere
+  constructor(
+    @InjectBot() private readonly bot: Telegraf,
+    @InjectQueue('messageQueue') private readonly messageQueue: Queue,
+  ) {}
+
+  @Process('sendMessage')
+  async handleSendMessage(job: Job<{ chatId: number; count: number }>) {
+    const { chatId, count } = job.data;
+
+    await this.bot.telegram.sendMessage(chatId, 'Hello');
+
+    if (count >= 5) {
+      await job.remove();
+    } else {
+      await this.messageQueue.add(
+        'sendMessage',
+        { chatId, count: count + 1 },
+        { delay: 1000 },
+      );
     }
   }
 }

@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { HelloService } from './hello.update';
 import { BullModule } from '@nestjs/bull';
 import { HelloProcessor } from './hello.processor';
+import { HelloUpdate } from './hello.update';
 
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'hello',
+      name: 'messageQueue',
     }),
   ],
-  providers: [HelloService, HelloProcessor],
+  providers: [HelloUpdate, HelloProcessor],
 })
 export class HelloModule {}

@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common';
-import { TelegrafModule } from 'nestjs-telegraf';
 import { BotService } from './bot.update';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
+import { BotProcessor } from './bot.processor';
+import { BullModule } from '@nestjs/bull';
+import { TronwebModule } from 'src/tronweb/tronweb.module';
+import { TronwebService } from 'src/tronweb/tronweb.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Module({
-  imports: [ScheduleModule.forRoot()],
-  providers: [BotService],
+  imports: [
+    BullModule.registerQueue({
+      name: 'walletQueue',
+    }),
+    TronwebModule,
+  ],
+  providers: [BotService, BotProcessor, TronwebService, PrismaService],
 })
 export class BotModule {}
